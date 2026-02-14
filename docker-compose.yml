@@ -1,6 +1,6 @@
 services:
   ai-travel-agent:
-    image: sagipael/ai-travel-agent:latest
+    image: ghcr.io/sagipael/ai-travel-agent:latest
     # Uncomment to build from source instead:
     # build: .
     ports:

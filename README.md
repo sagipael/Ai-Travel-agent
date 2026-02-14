@@ -37,7 +37,7 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
      -p 5000:5000 \
      --env-file .env \
      -v $(pwd)/data:/app/data \
-     sagipael/ai-travel-agent:latest
+     ghcr.io/sagipael/ai-travel-agent:latest
    ```
 
 4. **Access the application**
@@ -109,6 +109,7 @@ For detailed instructions with screenshots, see the **[UI Guide](docs/UI_GUIDE.m
 1. **Open the Web UI** at `http://localhost:5000`
 
 2. **Create a Search**:
+   - Enter your source country (where you're flying from)
    - Enter destinations (one per line)
    - Select date range for your trip
    - Choose check interval (how often to check prices)
@@ -181,18 +182,18 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Docker Hub
+## GitHub Container Registry
 
-The Docker image is automatically built and published to Docker Hub via GitHub Actions on every push to the main branch and on version tags.
+The Docker image is automatically built and published to GitHub Container Registry via GitHub Actions on every push to the main branch and on version tags.
 
 Pull the latest image:
 ```bash
-docker pull sagipael/ai-travel-agent:latest
+docker pull ghcr.io/sagipael/ai-travel-agent:latest
 ```
 
 Or pull a specific version:
 ```bash
-docker pull sagipael/ai-travel-agent:v1.0.0
+docker pull ghcr.io/sagipael/ai-travel-agent:v1.0.0
 ```
 
 Available tags:
