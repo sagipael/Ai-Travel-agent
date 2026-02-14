@@ -183,8 +183,10 @@ You Save: $70 (13.5%)
 Date Range: Mar 15 - Mar 22
 Last Checked: 2 minutes ago
 
-View Details: [Link to Dashboard]
+View Details: http://localhost:5000
 ```
+
+The link takes you directly to your dashboard where you can see full details and price graphs.
 
 ### Managing Notifications
 Configure notification settings:
