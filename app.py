@@ -4,6 +4,7 @@ import json
 import threading
 import time
 from datetime import datetime, timedelta
+from urllib.parse import quote
 import google.generativeai as genai
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -90,7 +91,16 @@ def send_telegram_message(message):
         return False
 
 def search_flights_with_ai(source_country, destination, date_start, date_end, allow_non_direct=False, custom_filter=""):
-    """Use Gemini AI to search for flight information"""
+    """Use Gemini AI to search for flight information
+    
+    Args:
+        source_country: Origin country/city
+        destination: Destination country/city
+        date_start: Start date in YYYY-MM-DD format
+        date_end: End date in YYYY-MM-DD format
+        allow_non_direct: Whether to include connecting flights
+        custom_filter: Additional filter criteria
+    """
     if not GEMINI_API_KEY:
         return {"error": "Gemini API key not configured"}
     
@@ -104,7 +114,11 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
     1. 3-5 different flight options with specific airlines/providers
     2. Price estimates for each option (economy class)
     3. Flight types (direct/connecting)
-    4. Booking links (use realistic booking sites like Skyscanner, Kayak, Google Flights, Momondo, or airline websites)
+    4. Booking links - IMPORTANT: Create valid, working URLs that include actual search parameters (origin, destination, dates)
+       - For Skyscanner: https://www.skyscanner.com/transport/flights/[origin]/[destination]/[date]/?adultsv2=1&cabinclass=economy
+       - For Google Flights: https://www.google.com/travel/flights?q=Flights%20from%20[origin]%20to%20[destination]%20on%20[date]
+       - For Kayak: https://www.kayak.com/flights/[origin]-[destination]/[date]?sort=bestflight_a
+       Use real airport codes or city names in the URLs
     5. Best times to book
     6. Any seasonal factors affecting prices
     
@@ -147,6 +161,17 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
     except Exception as e:
         print(f"Error with AI search: {e}")
         # Return simulated data as fallback
+        # Generate URL-safe versions of location strings using proper URL encoding
+        # Note: safe='' encodes all characters including '/' to avoid ambiguity in URL paths
+        # This works for most location names; airport codes like 'NYC/JFK' would need special handling
+        source_encoded = quote(source_country, safe='')
+        dest_encoded = quote(destination, safe='')
+        
+        # For Google Flights query parameter, construct the full query and encode it
+        # Google Flights accepts natural language queries in the q parameter
+        google_query = f"Flights from {source_country} to {destination} on {date_start}"
+        google_query_encoded = quote(google_query, safe='')
+        
         return {
             "source": source_country,
             "destination": destination,
@@ -156,21 +181,21 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
                     "provider": "Skyscanner",
                     "price": 450,
                     "flight_type": "Direct",
-                    "booking_link": f"https://www.skyscanner.com/transport/flights/{source_country.lower()}/{destination.lower()}/",
+                    "booking_link": f"https://www.skyscanner.com/transport/flights/{source_encoded}/{dest_encoded}/{date_start}/?adultsv2=1&cabinclass=economy",
                     "details": "Morning departure, good price"
                 },
                 {
                     "provider": "Google Flights",
                     "price": 380,
                     "flight_type": "1 stop",
-                    "booking_link": "https://www.google.com/flights",
+                    "booking_link": f"https://www.google.com/travel/flights?q={google_query_encoded}",
                     "details": "Afternoon departure via hub"
                 },
                 {
                     "provider": "Kayak",
                     "price": 520,
                     "flight_type": "Direct",
-                    "booking_link": "https://www.kayak.com/flights",
+                    "booking_link": f"https://www.kayak.com/flights/{source_encoded}-{dest_encoded}/{date_start}?sort=bestflight_a",
                     "details": "Evening departure, premium time"
                 }
             ],
