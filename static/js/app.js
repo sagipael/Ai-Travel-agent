@@ -29,6 +29,8 @@ function setupFormSubmit() {
         const dateStart = document.getElementById('dateStart').value;
         const dateEnd = document.getElementById('dateEnd').value;
         const checkInterval = parseInt(document.getElementById('checkInterval').value);
+        const allowNonDirect = document.getElementById('allowNonDirect').checked;
+        const customFilter = document.getElementById('customFilter').value.trim();
         
         if (!sourceCountry) {
             showMessage('Please enter a source country', 'error');
@@ -45,9 +47,13 @@ function setupFormSubmit() {
             return;
         }
         
+        const searchId = form.dataset.editId;
+        const method = searchId ? 'PUT' : 'POST';
+        const url = searchId ? `${API_BASE}/search/${searchId}` : `${API_BASE}/search`;
+        
         try {
-            const response = await fetch(`${API_BASE}/search`, {
-                method: 'POST',
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -56,25 +62,31 @@ function setupFormSubmit() {
                     destinations: destinations,
                     date_start: dateStart,
                     date_end: dateEnd,
-                    check_interval: checkInterval
+                    check_interval: checkInterval,
+                    allow_non_direct: allowNonDirect,
+                    custom_filter: customFilter
                 })
             });
             
             const data = await response.json();
             
             if (data.success) {
-                showMessage('Search created successfully! Check your Telegram for updates.', 'success');
+                const message = searchId ? 'Search updated successfully!' : 'Search created successfully! Check your Telegram for updates.';
+                showMessage(message, 'success');
                 form.reset();
+                document.getElementById('sourceCountry').value = 'Israel'; // Reset to default
+                delete form.dataset.editId;
+                document.querySelector('.search-section h2').textContent = 'Create New Search';
                 loadSearches();
                 
                 // Reload results after a short delay
                 setTimeout(loadResults, 2000);
             } else {
-                showMessage(data.error || 'Failed to create search', 'error');
+                showMessage(data.error || 'Failed to save search', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            showMessage('An error occurred while creating the search', 'error');
+            showMessage('An error occurred while saving the search', 'error');
         }
     });
 }
@@ -99,12 +111,17 @@ async function loadSearches() {
                     <p><strong>Source:</strong> ${search.source_country}</p>
                     <p><strong>Dates:</strong> ${search.date_start} to ${search.date_end}</p>
                     <p><strong>Check Interval:</strong> Every ${search.check_interval} hours</p>
+                    <p><strong>Flight Type:</strong> ${search.allow_non_direct ? 'Direct & Connecting' : 'Direct only'}</p>
+                    ${search.custom_filter ? `<p><strong>Custom Filter:</strong> ${search.custom_filter}</p>` : ''}
                     <p><strong>Created:</strong> ${new Date(search.created_at).toLocaleString()}</p>
                     <div class="destination-tags">
                         ${search.destinations.map(dest => `<span class="tag">${dest}</span>`).join('')}
                     </div>
                 </div>
-                <button class="btn btn-danger" onclick="deleteSearch(${search.id})">Delete</button>
+                <div class="search-actions">
+                    <button class="btn btn-edit" onclick="editSearch(${search.id})">Edit</button>
+                    <button class="btn btn-danger" onclick="deleteSearch(${search.id})">Delete</button>
+                </div>
             </div>
         `).join('');
     } catch (error) {
@@ -139,6 +156,41 @@ async function deleteSearch(searchId) {
     }
 }
 
+// Edit a search
+async function editSearch(searchId) {
+    try {
+        const response = await fetch(`${API_BASE}/search/${searchId}`);
+        const search = await response.json();
+        
+        if (search.error) {
+            showMessage('Failed to load search', 'error');
+            return;
+        }
+        
+        // Populate form with search data
+        document.getElementById('sourceCountry').value = search.source_country;
+        document.getElementById('destinations').value = search.destinations.join('\n');
+        document.getElementById('dateStart').value = search.date_start;
+        document.getElementById('dateEnd').value = search.date_end;
+        document.getElementById('checkInterval').value = search.check_interval;
+        document.getElementById('allowNonDirect').checked = search.allow_non_direct;
+        document.getElementById('customFilter').value = search.custom_filter || '';
+        
+        // Store search ID in form for update
+        const form = document.getElementById('searchForm');
+        form.dataset.editId = searchId;
+        
+        // Update form title
+        document.querySelector('.search-section h2').textContent = `Edit Search #${searchId}`;
+        
+        // Scroll to form
+        document.querySelector('.search-section').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error('Error loading search:', error);
+        showMessage('An error occurred while loading the search', 'error');
+    }
+}
+
 // Load results
 async function loadResults() {
     try {
@@ -156,6 +208,7 @@ async function loadResults() {
             const details = result.details || {};
             const priceRange = details.estimated_price_range || {};
             const tips = details.tips || [];
+            const flightOptions = details.flight_options || [];
             
             return `
                 <div class="result-item">
@@ -169,6 +222,26 @@ async function loadResults() {
                         <p><strong>📅 Date Range:</strong> ${details.date_range || 'N/A'}</p>
                         <p><strong>⏰ Best Booking Time:</strong> ${details.best_booking_time || 'N/A'}</p>
                         <p><strong>🕐 Checked At:</strong> ${new Date(result.checked_at).toLocaleString()}</p>
+                        
+                        ${flightOptions.length > 0 ? `
+                            <div class="flight-options">
+                                <strong>✈️ Flight Options:</strong>
+                                ${flightOptions.map(option => `
+                                    <div class="flight-option">
+                                        <div class="flight-option-header">
+                                            <span class="provider">${option.provider}</span>
+                                            <span class="flight-price">$${option.price}</span>
+                                            <span class="flight-type">${option.flight_type}</span>
+                                        </div>
+                                        <p class="flight-details">${option.details}</p>
+                                        <a href="${option.booking_link}" target="_blank" class="booking-link">
+                                            🔗 Book Now
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
                         ${tips.length > 0 ? `
                             <div class="tips">
                                 <strong>💡 Tips:</strong>

@@ -4,7 +4,7 @@ services:
     # Uncomment to build from source instead:
     # build: .
     ports:
-      - "5000:5000"
+      - "5008:5008"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
