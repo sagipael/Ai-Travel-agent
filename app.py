@@ -162,8 +162,13 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
         print(f"Error with AI search: {e}")
         # Return simulated data as fallback
         # Generate URL-safe versions of location strings using proper URL encoding
+        # Note: safe='' encodes all characters for path components to avoid issues with special chars
         source_encoded = quote(source_country, safe='')
         dest_encoded = quote(destination, safe='')
+        
+        # For Google Flights query parameter, construct the full query and encode it
+        google_query = f"Flights from {source_country} to {destination} on {date_start}"
+        google_query_encoded = quote(google_query, safe='')
         
         return {
             "source": source_country,
@@ -181,7 +186,7 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
                     "provider": "Google Flights",
                     "price": 380,
                     "flight_type": "1 stop",
-                    "booking_link": f"https://www.google.com/travel/flights?q=Flights%20from%20{source_encoded}%20to%20{dest_encoded}%20on%20{date_start}",
+                    "booking_link": f"https://www.google.com/travel/flights?q={google_query_encoded}",
                     "details": "Afternoon departure via hub"
                 },
                 {
