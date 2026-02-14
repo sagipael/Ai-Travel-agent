@@ -33,6 +33,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS searches
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   destinations TEXT,
+                  source_country TEXT,
                   date_start TEXT,
                   date_end TEXT,
                   check_interval INTEGER,
@@ -71,12 +72,12 @@ def send_telegram_message(message):
         print(f"Error sending Telegram message: {e}")
         return False
 
-def search_flights_with_ai(destination, date_start, date_end):
+def search_flights_with_ai(source_country, destination, date_start, date_end):
     """Use Gemini AI to search for flight information"""
     if not GEMINI_API_KEY:
         return {"error": "Gemini API key not configured"}
     
-    prompt = f"""You are a travel agent AI assistant. Search for flight options to {destination} 
+    prompt = f"""You are a travel agent AI assistant. Search for flight options from {source_country} to {destination} 
     between {date_start} and {date_end}. 
     
     Provide a realistic estimate of:
@@ -87,6 +88,7 @@ def search_flights_with_ai(destination, date_start, date_end):
     
     Format your response as JSON with the following structure:
     {{
+        "source": "{source_country}",
         "destination": "{destination}",
         "date_range": "{date_start} to {date_end}",
         "estimated_price_range": {{"min": 0, "max": 0}},
@@ -115,6 +117,7 @@ def search_flights_with_ai(destination, date_start, date_end):
         print(f"Error with AI search: {e}")
         # Return simulated data as fallback
         return {
+            "source": source_country,
             "destination": destination,
             "date_range": f"{date_start} to {date_end}",
             "estimated_price_range": {"min": 300, "max": 800},
@@ -122,15 +125,16 @@ def search_flights_with_ai(destination, date_start, date_end):
             "tips": ["Book on Tuesday or Wednesday for better prices", "Use incognito mode when searching"]
         }
 
-def check_flights(search_id, destinations, date_start, date_end):
+def check_flights(search_id, source_country, destinations, date_start, date_end):
     """Check flights for a specific search"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
-    results_message = f"🛫 *Flight Update for {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n"
+    results_message = f"🛫 *Flight Update for {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n"
+    results_message += f"✈️ *From:* {source_country}\n\n"
     
     for destination in destinations:
-        result = search_flights_with_ai(destination, date_start, date_end)
+        result = search_flights_with_ai(source_country, destination, date_start, date_end)
         
         # Store result in database
         c.execute('''INSERT INTO results (search_id, destination, date, price, details, checked_at)
@@ -162,32 +166,33 @@ def create_search():
     """Create a new flight search"""
     data = request.json
     destinations = data.get('destinations', [])
+    source_country = data.get('source_country', '')
     date_start = data.get('date_start')
     date_end = data.get('date_end')
     check_interval = data.get('check_interval', 24)  # hours
     
-    if not destinations or not date_start or not date_end:
+    if not destinations or not date_start or not date_end or not source_country:
         return jsonify({"error": "Missing required fields"}), 400
     
     # Save to database
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('''INSERT INTO searches (destinations, date_start, date_end, check_interval, created_at)
-                 VALUES (?, ?, ?, ?, ?)''',
-              (json.dumps(destinations), date_start, date_end, check_interval, datetime.now().isoformat()))
+    c.execute('''INSERT INTO searches (destinations, source_country, date_start, date_end, check_interval, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?)''',
+              (json.dumps(destinations), source_country, date_start, date_end, check_interval, datetime.now().isoformat()))
     search_id = c.lastrowid
     conn.commit()
     conn.close()
     
     # Do initial check
-    check_flights(search_id, destinations, date_start, date_end)
+    check_flights(search_id, source_country, destinations, date_start, date_end)
     
     # Schedule periodic checks
     scheduler.add_job(
         func=check_flights,
         trigger='interval',
         hours=check_interval,
-        args=[search_id, destinations, date_start, date_end],
+        args=[search_id, source_country, destinations, date_start, date_end],
         id=f'search_{search_id}',
         replace_existing=True
     )
@@ -239,10 +244,11 @@ def get_searches():
         searches.append({
             "id": row[0],
             "destinations": json.loads(row[1]),
-            "date_start": row[2],
-            "date_end": row[3],
-            "check_interval": row[4],
-            "created_at": row[5]
+            "source_country": row[2] if row[2] else "Not specified",
+            "date_start": row[3],
+            "date_end": row[4],
+            "check_interval": row[5],
+            "created_at": row[6]
         })
     
     return jsonify(searches)

@@ -20,6 +20,7 @@ function setupFormSubmit() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const sourceCountry = document.getElementById('sourceCountry').value.trim();
         const destinations = document.getElementById('destinations').value
             .split('\n')
             .map(d => d.trim())
@@ -28,6 +29,11 @@ function setupFormSubmit() {
         const dateStart = document.getElementById('dateStart').value;
         const dateEnd = document.getElementById('dateEnd').value;
         const checkInterval = parseInt(document.getElementById('checkInterval').value);
+        
+        if (!sourceCountry) {
+            showMessage('Please enter a source country', 'error');
+            return;
+        }
         
         if (destinations.length === 0) {
             showMessage('Please enter at least one destination', 'error');
@@ -46,6 +52,7 @@ function setupFormSubmit() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    source_country: sourceCountry,
                     destinations: destinations,
                     date_start: dateStart,
                     date_end: dateEnd,
@@ -89,6 +96,7 @@ async function loadSearches() {
             <div class="search-item">
                 <div class="search-info">
                     <h3>Search #${search.id}</h3>
+                    <p><strong>Source:</strong> ${search.source_country}</p>
                     <p><strong>Dates:</strong> ${search.date_start} to ${search.date_end}</p>
                     <p><strong>Check Interval:</strong> Every ${search.check_interval} hours</p>
                     <p><strong>Created:</strong> ${new Date(search.created_at).toLocaleString()}</p>
