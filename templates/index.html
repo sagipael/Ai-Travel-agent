@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Travel Agent</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛫 My AI Travel Agent</h1>
+            <p class="subtitle">Find the best flight deals with AI-powered search</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Search Form -->
+            <section class="search-section">
+                <h2>Create New Search</h2>
+                <form id="searchForm">
+                    <div class="form-group">
+                        <label for="destinations">Destinations (one per line):</label>
+                        <textarea id="destinations" name="destinations" rows="5" placeholder="Paris, France&#10;Tokyo, Japan&#10;New York, USA" required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateStart">Start Date:</label>
+                            <input type="date" id="dateStart" name="dateStart" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dateEnd">End Date:</label>
+                            <input type="date" id="dateEnd" name="dateEnd" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="checkInterval">Check Interval (hours):</label>
+                        <select id="checkInterval" name="checkInterval">
+                            <option value="1">Every hour</option>
+                            <option value="6">Every 6 hours</option>
+                            <option value="12">Every 12 hours</option>
+                            <option value="24" selected>Every 24 hours</option>
+                            <option value="48">Every 48 hours</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Start Monitoring</button>
+                </form>
+            </section>
+
+            <!-- Active Searches -->
+            <section class="searches-section">
+                <h2>Active Searches</h2>
+                <div id="activeSearches" class="searches-list">
+                    <p class="loading">Loading searches...</p>
+                </div>
+            </section>
+
+            <!-- Results -->
+            <section class="results-section">
+                <h2>Recent Results</h2>
+                <div id="results" class="results-list">
+                    <p class="loading">Loading results...</p>
+                </div>
+            </section>
+
+            <!-- Charts -->
+            <section class="charts-section">
+                <h2>Price Trends</h2>
+                <div id="charts" class="charts-container">
+                    <p class="info">Charts will appear after multiple price checks</p>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>Powered by Gemini AI 2.0 Flash | Results sent via Telegram</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
