@@ -14,9 +14,38 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
 
 ## Quick Start
 
-### Using Docker Compose (Recommended)
+### Using Pre-built Docker Image (Recommended)
 
-1. **Clone the repository**
+1. **Create environment file**
+   ```bash
+   cat > .env << EOF
+   GEMINI_API_KEY=your_gemini_api_key_here
+   TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+   TELEGRAM_CHAT_ID=your_telegram_chat_id_here
+   EOF
+   ```
+
+2. **Get your API keys**
+   - **Gemini API Key**: Get from [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - **Telegram Bot Token**: Create a bot using [@BotFather](https://t.me/botfather)
+   - **Telegram Chat ID**: Get your chat ID from [@userinfobot](https://t.me/userinfobot)
+
+3. **Run with Docker**
+   ```bash
+   docker run -d \
+     --name ai-travel-agent \
+     -p 5000:5000 \
+     --env-file .env \
+     -v $(pwd)/data:/app/data \
+     sagipael/ai-travel-agent:latest
+   ```
+
+4. **Access the application**
+   Open your browser and navigate to `http://localhost:5000`
+
+### Using Docker Compose
+
+1. **Clone the repository** (for docker-compose.yml)
    ```bash
    git clone https://github.com/sagipael/Ai-Travel-agent.git
    cd Ai-Travel-agent
@@ -28,10 +57,7 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
    # Edit .env with your API keys
    ```
 
-3. **Get your API keys**
-   - **Gemini API Key**: Get from [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - **Telegram Bot Token**: Create a bot using [@BotFather](https://t.me/botfather)
-   - **Telegram Chat ID**: Get your chat ID from [@userinfobot](https://t.me/userinfobot)
+3. **Get your API keys** (see above)
 
 4. **Run with Docker Compose**
    ```bash
@@ -41,14 +67,17 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
 5. **Access the application**
    Open your browser and navigate to `http://localhost:5000`
 
-### Using Docker
+### Building from Source
 
 ```bash
+git clone https://github.com/sagipael/Ai-Travel-agent.git
+cd Ai-Travel-agent
 docker build -t ai-travel-agent .
-docker run -p 5000:5000 \
+docker run -d -p 5000:5000 \
   -e GEMINI_API_KEY="your_key" \
   -e TELEGRAM_BOT_TOKEN="your_token" \
   -e TELEGRAM_CHAT_ID="your_chat_id" \
+  -v $(pwd)/data:/app/data \
   ai-travel-agent
 ```
 
@@ -72,6 +101,10 @@ docker run -p 5000:5000 \
    ```
 
 ## Usage
+
+For detailed instructions with screenshots, see the **[UI Guide](docs/UI_GUIDE.md)**.
+
+### Quick Start Guide
 
 1. **Open the Web UI** at `http://localhost:5000`
 
@@ -150,12 +183,23 @@ python app.py
 
 ## Docker Hub
 
-The Docker image is automatically built and published to Docker Hub via GitHub Actions on every push to the main branch.
+The Docker image is automatically built and published to Docker Hub via GitHub Actions on every push to the main branch and on version tags.
 
-To use the pre-built image:
+Pull the latest image:
 ```bash
-docker pull <username>/ai-travel-agent:latest
+docker pull sagipael/ai-travel-agent:latest
 ```
+
+Or pull a specific version:
+```bash
+docker pull sagipael/ai-travel-agent:v1.0.0
+```
+
+Available tags:
+- `latest` - Latest stable release from main branch
+- `main` - Latest build from main branch
+- `v*` - Specific version tags (e.g., v1.0.0, v1.1.0)
+- `sha-*` - Builds from specific commits
 
 ## Contributing
 

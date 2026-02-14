@@ -1,6 +1,8 @@
 services:
   ai-travel-agent:
-    build: .
+    image: sagipael/ai-travel-agent:latest
+    # Uncomment to build from source instead:
+    # build: .
     ports:
       - "5000:5000"
     environment:
