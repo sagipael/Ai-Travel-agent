@@ -15,6 +15,7 @@ app = Flask(__name__)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+DB_PATH = os.environ.get('DB_PATH', 'travel_agent.db')
 
 # Initialize Gemini AI
 if GEMINI_API_KEY:
@@ -27,7 +28,7 @@ scheduler.start()
 
 # Database setup
 def init_db():
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS searches
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,7 +124,7 @@ def search_flights_with_ai(destination, date_start, date_end):
 
 def check_flights(search_id, destinations, date_start, date_end):
     """Check flights for a specific search"""
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     
     results_message = f"🛫 *Flight Update for {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n"
@@ -169,7 +170,7 @@ def create_search():
         return jsonify({"error": "Missing required fields"}), 400
     
     # Save to database
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''INSERT INTO searches (destinations, date_start, date_end, check_interval, created_at)
                  VALUES (?, ?, ?, ?, ?)''',
@@ -200,7 +201,7 @@ def create_search():
 @app.route('/api/results')
 def get_results():
     """Get all flight search results"""
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''SELECT r.*, s.destinations 
                  FROM results r 
@@ -227,7 +228,7 @@ def get_results():
 @app.route('/api/searches')
 def get_searches():
     """Get all active searches"""
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT * FROM searches WHERE active = 1 ORDER BY created_at DESC')
     rows = c.fetchall()
@@ -249,7 +250,7 @@ def get_searches():
 @app.route('/api/search/<int:search_id>', methods=['DELETE'])
 def delete_search(search_id):
     """Delete/deactivate a search"""
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('UPDATE searches SET active = 0 WHERE id = ?', (search_id,))
     conn.commit()
@@ -258,15 +259,15 @@ def delete_search(search_id):
     # Remove scheduled job
     try:
         scheduler.remove_job(f'search_{search_id}')
-    except:
-        pass
+    except Exception:
+        pass  # Job may not exist
     
     return jsonify({"success": True})
 
 @app.route('/api/chart/<destination>')
 def get_chart_data(destination):
     """Get price history for chart"""
-    conn = sqlite3.connect('travel_agent.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''SELECT date, price, checked_at 
                  FROM results 
@@ -283,4 +284,5 @@ def get_chart_data(destination):
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
