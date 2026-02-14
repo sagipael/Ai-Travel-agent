@@ -162,11 +162,13 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
         print(f"Error with AI search: {e}")
         # Return simulated data as fallback
         # Generate URL-safe versions of location strings using proper URL encoding
-        # Note: safe='' encodes all characters for path components to avoid issues with special chars
+        # Note: safe='' encodes all characters including '/' to avoid ambiguity in URL paths
+        # This works for most location names; airport codes like 'NYC/JFK' would need special handling
         source_encoded = quote(source_country, safe='')
         dest_encoded = quote(destination, safe='')
         
         # For Google Flights query parameter, construct the full query and encode it
+        # Google Flights accepts natural language queries in the q parameter
         google_query = f"Flights from {source_country} to {destination} on {date_start}"
         google_query_encoded = quote(google_query, safe='')
         
