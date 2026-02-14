@@ -5,6 +5,11 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
 ## Features
 
 - 🤖 **AI-Powered Search**: Uses Gemini 2.0 Flash for intelligent flight price estimates and travel advice
+- ✈️ **Flight Options with Booking Links**: Multiple flight options from different providers (Skyscanner, Google Flights, Kayak) with direct booking links
+- 🔄 **Non-Direct Flights**: Option to include connecting flights in search results
+- 🎯 **Custom Filters**: AI-powered custom filter support (e.g., "show flights only from Israeli companies")
+- ✏️ **Edit Searches**: Modify existing searches without recreating them
+- 🇮🇱 **Default Settings**: Source country defaults to Israel for convenience
 - 📊 **Price Tracking**: Monitors flight prices at configurable intervals
 - 📱 **Telegram Notifications**: Sends updates directly to your Telegram chat
 - 📈 **Price Trends**: Visual charts showing price history over time
@@ -34,14 +39,14 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
    ```bash
    docker run -d \
      --name ai-travel-agent \
-     -p 5000:5000 \
+     -p 5008:5008 \
      --env-file .env \
      -v $(pwd)/data:/app/data \
      ghcr.io/sagipael/ai-travel-agent:latest
    ```
 
 4. **Access the application**
-   Open your browser and navigate to `http://localhost:5000`
+   Open your browser and navigate to `http://localhost:5008`
 
 ### Using Docker Compose
 
@@ -65,7 +70,7 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
    ```
 
 5. **Access the application**
-   Open your browser and navigate to `http://localhost:5000`
+   Open your browser and navigate to `http://localhost:5008`
 
 ### Building from Source
 
@@ -73,7 +78,7 @@ An intelligent travel agent powered by Google's Gemini AI that monitors flight p
 git clone https://github.com/sagipael/Ai-Travel-agent.git
 cd Ai-Travel-agent
 docker build -t ai-travel-agent .
-docker run -d -p 5000:5000 \
+docker run -d -p 5008:5008 \
   -e GEMINI_API_KEY="your_key" \
   -e TELEGRAM_BOT_TOKEN="your_token" \
   -e TELEGRAM_CHAT_ID="your_chat_id" \

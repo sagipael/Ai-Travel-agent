@@ -21,12 +21,24 @@
                 <form id="searchForm">
                     <div class="form-group">
                         <label for="sourceCountry">Source Country:</label>
-                        <input type="text" id="sourceCountry" name="sourceCountry" placeholder="e.g., United States, Israel, UK" required>
+                        <input type="text" id="sourceCountry" name="sourceCountry" value="Israel" placeholder="e.g., United States, Israel, UK" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="destinations">Destinations (one per line):</label>
                         <textarea id="destinations" name="destinations" rows="5" placeholder="Paris, France&#10;Tokyo, Japan&#10;New York, USA" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="allowNonDirect" name="allowNonDirect">
+                            Allow non-direct flights
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customFilter">Custom Filter (optional):</label>
+                        <input type="text" id="customFilter" name="customFilter" placeholder="e.g., show flights only from Israeli companies">
                     </div>
                     
                     <div class="form-row">
@@ -83,6 +95,12 @@
 
         <footer>
             <p>Powered by Gemini AI 2.0 Flash | Results sent via Telegram</p>
+            <p style="margin-top: 10px;">© 2026 All rights reserved - <strong>Sagi Pael</strong></p>
+            <p style="margin-top: 5px;">
+                <a href="https://github.com/sagipael/Ai-Travel-agent" target="_blank" style="color: #667eea; text-decoration: none;">
+                    🔗 View on GitHub
+                </a>
+            </p>
         </footer>
     </div>
 

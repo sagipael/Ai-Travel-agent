@@ -80,6 +80,7 @@ label {
 }
 
 input[type="date"],
+input[type="text"],
 select,
 textarea {
     width: 100%;
@@ -91,10 +92,17 @@ textarea {
 }
 
 input[type="date"]:focus,
+input[type="text"]:focus,
 select:focus,
 textarea:focus {
     outline: none;
     border-color: #667eea;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    cursor: pointer;
 }
 
 textarea {
@@ -131,6 +139,90 @@ textarea {
 
 .btn-danger:hover {
     background: #c82333;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #333;
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+}
+
+/* Search Actions */
+.search-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Flight Options */
+.flight-options {
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+}
+
+.flight-option {
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.flight-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.provider {
+    font-weight: bold;
+    color: #667eea;
+    font-size: 1.1em;
+}
+
+.flight-price {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.flight-type {
+    background: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+.flight-details {
+    color: #666;
+    margin: 10px 0;
+}
+
+.booking-link {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.booking-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 /* Searches List */
@@ -280,6 +372,22 @@ footer {
     color: white;
     text-align: center;
     padding: 20px;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: #764ba2;
+    text-decoration: underline;
 }
 
 /* Responsive */
