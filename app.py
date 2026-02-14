@@ -6,7 +6,6 @@ import time
 from datetime import datetime, timedelta
 import google.generativeai as genai
 import requests
-from apscheduler.schedules import IntervalScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
 import sqlite3
 
