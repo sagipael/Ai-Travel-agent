@@ -244,7 +244,7 @@ def get_searches():
         searches.append({
             "id": row[0],
             "destinations": json.loads(row[1]),
-            "source_country": row[2],
+            "source_country": row[2] if row[2] else "Not specified",
             "date_start": row[3],
             "date_end": row[4],
             "check_interval": row[5],
