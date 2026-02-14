@@ -29,6 +29,7 @@ scheduler.start()
 # Database setup
 def init_db():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS searches
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,6 +55,20 @@ def init_db():
     conn.close()
 
 init_db()
+
+def row_to_search_dict(row):
+    """Helper function to convert database row to search dictionary"""
+    return {
+        "id": row["id"],
+        "destinations": json.loads(row["destinations"]),
+        "source_country": row["source_country"] if row["source_country"] else "Not specified",
+        "date_start": row["date_start"],
+        "date_end": row["date_end"],
+        "check_interval": row["check_interval"],
+        "allow_non_direct": bool(row["allow_non_direct"]) if "allow_non_direct" in row.keys() else False,
+        "custom_filter": row["custom_filter"] if "custom_filter" in row.keys() else "",
+        "created_at": row["created_at"]
+    }
 
 def send_telegram_message(message):
     """Send message to Telegram"""
@@ -275,25 +290,13 @@ def get_results():
 def get_searches():
     """Get all active searches"""
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT * FROM searches WHERE active = 1 ORDER BY created_at DESC')
     rows = c.fetchall()
     conn.close()
     
-    searches = []
-    for row in rows:
-        searches.append({
-            "id": row[0],
-            "destinations": json.loads(row[1]),
-            "source_country": row[2] if row[2] else "Not specified",
-            "date_start": row[3],
-            "date_end": row[4],
-            "check_interval": row[5],
-            "allow_non_direct": bool(row[6]) if len(row) > 6 else False,
-            "custom_filter": row[7] if len(row) > 7 else "",
-            "created_at": row[8] if len(row) > 8 else row[6]
-        })
-    
+    searches = [row_to_search_dict(row) for row in rows]
     return jsonify(searches)
 
 @app.route('/api/search/<int:search_id>', methods=['DELETE'])
@@ -317,6 +320,7 @@ def delete_search(search_id):
 def get_search(search_id):
     """Get a specific search by ID"""
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('SELECT * FROM searches WHERE id = ?', (search_id,))
     row = c.fetchone()
@@ -325,18 +329,7 @@ def get_search(search_id):
     if not row:
         return jsonify({"error": "Search not found"}), 404
     
-    search = {
-        "id": row[0],
-        "destinations": json.loads(row[1]),
-        "source_country": row[2] if row[2] else "Not specified",
-        "date_start": row[3],
-        "date_end": row[4],
-        "check_interval": row[5],
-        "allow_non_direct": bool(row[6]) if len(row) > 6 else False,
-        "custom_filter": row[7] if len(row) > 7 else "",
-        "created_at": row[8] if len(row) > 8 else row[6]
-    }
-    
+    search = row_to_search_dict(row)
     return jsonify(search)
 
 @app.route('/api/search/<int:search_id>', methods=['PUT'])
