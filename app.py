@@ -4,6 +4,7 @@ import json
 import threading
 import time
 from datetime import datetime, timedelta
+from urllib.parse import quote
 import google.generativeai as genai
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -90,7 +91,16 @@ def send_telegram_message(message):
         return False
 
 def search_flights_with_ai(source_country, destination, date_start, date_end, allow_non_direct=False, custom_filter=""):
-    """Use Gemini AI to search for flight information"""
+    """Use Gemini AI to search for flight information
+    
+    Args:
+        source_country: Origin country/city
+        destination: Destination country/city
+        date_start: Start date in YYYY-MM-DD format
+        date_end: End date in YYYY-MM-DD format
+        allow_non_direct: Whether to include connecting flights
+        custom_filter: Additional filter criteria
+    """
     if not GEMINI_API_KEY:
         return {"error": "Gemini API key not configured"}
     
@@ -151,9 +161,9 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
     except Exception as e:
         print(f"Error with AI search: {e}")
         # Return simulated data as fallback
-        # Generate URL-safe versions of location strings
-        source_clean = source_country.replace(" ", "%20").replace(",", "")
-        dest_clean = destination.replace(" ", "%20").replace(",", "")
+        # Generate URL-safe versions of location strings using proper URL encoding
+        source_encoded = quote(source_country, safe='')
+        dest_encoded = quote(destination, safe='')
         
         return {
             "source": source_country,
@@ -164,21 +174,21 @@ def search_flights_with_ai(source_country, destination, date_start, date_end, al
                     "provider": "Skyscanner",
                     "price": 450,
                     "flight_type": "Direct",
-                    "booking_link": f"https://www.skyscanner.com/transport/flights/{source_clean}/{dest_clean}/{date_start}/?adultsv2=1&cabinclass=economy",
+                    "booking_link": f"https://www.skyscanner.com/transport/flights/{source_encoded}/{dest_encoded}/{date_start}/?adultsv2=1&cabinclass=economy",
                     "details": "Morning departure, good price"
                 },
                 {
                     "provider": "Google Flights",
                     "price": 380,
                     "flight_type": "1 stop",
-                    "booking_link": f"https://www.google.com/travel/flights?q=Flights%20from%20{source_clean}%20to%20{dest_clean}%20on%20{date_start}",
+                    "booking_link": f"https://www.google.com/travel/flights?q=Flights%20from%20{source_encoded}%20to%20{dest_encoded}%20on%20{date_start}",
                     "details": "Afternoon departure via hub"
                 },
                 {
                     "provider": "Kayak",
                     "price": 520,
                     "flight_type": "Direct",
-                    "booking_link": f"https://www.kayak.com/flights/{source_clean}-{dest_clean}/{date_start}?sort=bestflight_a",
+                    "booking_link": f"https://www.kayak.com/flights/{source_encoded}-{dest_encoded}/{date_start}?sort=bestflight_a",
                     "details": "Evening departure, premium time"
                 }
             ],
